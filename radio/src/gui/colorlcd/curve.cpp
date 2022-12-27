@@ -108,11 +108,12 @@ void CurveRenderer::paint(BitmapBuffer * dc, uint8_t ofst)
   drawCurve(dc);
 }
 
-Curve::Curve(Window * parent, const rect_t & rect, std::function<int(int)> function, std::function<int()> position):
+Curve::Curve(Window * parent, const rect_t & rect, std::function<int(int)> function, std::function<int()> position, std::function<int()> selected):
       Window(parent, rect, OPAQUE),
       base(rect_t{0, 0, rect.w, rect.h}, function),
       function(std::move(function)),
-      position(std::move(position))
+      position(std::move(position)),
+      selected(std::move(selected))
 {
 }
 
@@ -192,6 +193,21 @@ void Curve::drawPosition(BitmapBuffer * dc)
   dc->drawText(11, 10, coords, FONT(XS) | COLOR_THEME_PRIMARY1);
 }
 
+DEFINE_LZ4_BITMAP(LBM_DOT);
+
+void Curve::drawSelected(BitmapBuffer * dc)
+{
+  int valueX = selected();
+  if (valueX != 200) {
+    int valueY = function(valueX);
+
+    coord_t x = getPointX(valueX);
+    coord_t y = getPointY(valueY);
+
+    dc->drawBitmapPattern(x - 6, y - 6, LBM_DOT, COLOR_THEME_EDIT);
+  }
+}
+
 void Curve::drawPoint(BitmapBuffer * dc, const CurvePoint & point)
 {
   coord_t x = getPointX(point.coords.x);
@@ -203,24 +219,26 @@ void Curve::drawPoint(BitmapBuffer * dc, const CurvePoint & point)
 
 void Curve::paint(BitmapBuffer * dc)
 {
-  // Adjust border - if drawing points leave more space to prevent clipping of end points.
-  if (points.size() > 0) {
-    dx = 4;
-    dy = 4;
+  if (selected) {
+    dx = 6;
+    dy = 6;
   } else {
-    dx = 2;
-    dy = 2;
+    dx = 3;
+    dy = 3;
   }
   dw = width() - dx * 2;
   dh = height() - dy * 2;
 
-  base.paint(dc, dx-2);
-
+  drawBackground(dc);
+  drawCurve(dc);
   for (auto point: points) {
     drawPoint(dc, point);
   }
   if (position) {
     drawPosition(dc);
+  }
+  if (selected) {
+    drawSelected(dc);
   }
 }
 
@@ -246,6 +264,4 @@ void Curve::checkEvents()
       invalidate();
     }
   }
-
-  Window::checkEvents();
 }

@@ -25,7 +25,7 @@
 #include "form.h"
 #include "curve.h"
 
-class NumberEdit;
+class CurveDataEdit;
 
 class CurveEdit: public FormField
 {
@@ -47,33 +47,31 @@ class CurveEdit: public FormField
 
     void checkEvents(void) override;
 
+    void showCurrent(bool state) { showEdit = state; }
+
+    uint8_t getCurrent() const { return current; }
+    uint8_t getCurvePointsCount() const;
+    int8_t getX(uint8_t n) const;
+    int8_t getX() const { return getX(current); }
+    int8_t getY(uint8_t n) const;
+    int8_t getY() const { return getY(current); }
+    bool isCustomCurve() const;
+    bool isEditableX() const;
+
+    bool setCurrent(uint8_t n);
+    void selectPoint(int8_t chg);
+    void setX(int8_t chg);
+    void setY(int8_t chg);
+    void setX(uint8_t n, int8_t value);
+    void setY(uint8_t n, int8_t value);
+
    protected:
     Curve preview;
     uint8_t index;
     uint8_t current;
+    bool showEdit;
     static mixsrc_t currentSource;
     static bool lockSource;
-};
-
-class CurveDataEdit : public Window
-{
-  public:
-    CurveDataEdit(Window * parent, const rect_t & rect, uint8_t index);
-
-    void setCurveEdit(CurveEdit* _curveEdit)
-    {
-      curveEdit = _curveEdit;
-      update();
-    }
-
-    void update();
-
-  protected:
-    uint8_t index;
-    CurveEdit * curveEdit;
-    NumberEdit* numEditX[16];
-
-    void curvePointsRow(FormWindow::Line* parent, int start, int count, int curvePointsCount, bool isCustom);
 };
 
 class CurveEditWindow : public Page
