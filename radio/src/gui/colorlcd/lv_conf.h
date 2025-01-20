@@ -24,8 +24,8 @@
 /* clang-format off */
 
 #include <stdint.h>
-#include "definitions.h"
 #if !defined(LV_SKIP_DEFINES)
+#include "definitions.h"
 #include "hal.h"
 #endif
 
